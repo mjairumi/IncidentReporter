@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import asyncio
 
 import IncidentReportDto
-from Logger import logger
+from Logger import logger, incident_logger
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -45,7 +45,7 @@ class IncidentEventPublisher:
 
 class LoggerSubscriber(IncidentSubscriber):
     async def on_incident(self, event: IncidentEvent):
-        logger.warning(
+        incident_logger.warning(
             f"[{event.source}] Incident at {event.detected_at} "
             f"| Status: {event.incident.status} "
             f"| Message: {event.incident.message}"

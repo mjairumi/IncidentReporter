@@ -19,7 +19,7 @@ class DummyServicePoller(PollingInterface):
 
     def __init__(self):
         self.frequency = 30
-        self.incident_frequency = 10
+        self.incident_frequency = 30
         self.is_incident_active = False
         self._last_seen_incident: Optional[DummyServiceIncident] = None  # Tracks last known incident
 

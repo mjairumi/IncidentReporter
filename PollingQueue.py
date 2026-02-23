@@ -1,26 +1,15 @@
-
 import asyncio
 from typing import Optional
-
 from PollingInterface import *
-
 import asyncio
-from abc import ABC, abstractmethod
-from collections import deque
-from contextlib import asynccontextmanager
-
 from datetime import datetime, timedelta
 from typing import Optional
-
-from fastapi import FastAPI
-from pydantic import BaseModel, Field
-from DummyServicePoller import *
 from Logger import logger
 from PublisherSubscriber import IncidentEvent, IncidentEventPublisher
 
 
-
 class PollingObject:
+
     def __init__(self, polling: PollingInterface):
         self.polling = polling
         self.pollingFrequency: int = polling.getPollingFrequency()
@@ -72,8 +61,6 @@ class PollingQueue():
                 ], return_exceptions=True)
 
             await asyncio.sleep(1)
-
-    
 
     async def _run_poll(self, obj: PollingObject):
         try:
