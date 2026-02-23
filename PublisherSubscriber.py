@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
 import asyncio
 
+import IncidentReportDto
 from Logger import logger
 from dataclasses import dataclass, field
-from DummyServicePoller import DummyServiceIncident
 from datetime import datetime
 
 @dataclass
 class IncidentEvent:
-    incident: DummyServiceIncident
+    incident: IncidentReportDto
     source: str
     detected_at: datetime = field(default_factory=datetime.now)
-    
+
 class IncidentSubscriber(ABC):
 
     @abstractmethod

@@ -16,6 +16,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from DummyServicePoller import *
 from Logger import logger
+from PublisherSubscriber import IncidentEvent, IncidentEventPublisher
 
 
 

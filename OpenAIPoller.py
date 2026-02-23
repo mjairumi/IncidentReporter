@@ -2,12 +2,11 @@ import httpx
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from email.utils import parsedate_to_datetime
-from typing import Optional
 from bs4 import BeautifulSoup
 
-from PollingInterface import *
+import IncidentReportDto
+from PollingInterface import PollingInterface, PollResult
 from Logger import logger
-from DummyServicePoller import DummyServiceIncident
 
 class OpenAIPoller(PollingInterface):
 
@@ -68,9 +67,10 @@ class OpenAIPoller(PollingInterface):
                 self.is_incident_active = False
                 logger.info("[OpenAIPoller] Incident resolved — switching to normal polling.")
 
-            incident = DummyServiceIncident(
+            incident = IncidentReportDto(
                 status=status,
                 message=latest["title"],
+                source="OpenAI",
                 createdAt=latest["pub_date"]
             )
 

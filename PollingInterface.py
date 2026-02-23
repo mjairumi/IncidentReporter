@@ -1,16 +1,15 @@
 
 from abc import ABC, abstractmethod
 from typing import Optional
-from DummyServicePoller import DummyServiceIncident
-
+from IncidentReportDto import IncidentReportDto
 class PollResult:
     def __init__(
         self,
-        incident: Optional[DummyServiceIncident] = None,
+        incident: Optional[IncidentReportDto] = None,
         new_frequency: Optional[int] = None
     ):
-        self.incident = incident        # None = no incident
-        self.new_frequency = new_frequency  # None = no frequency change
+        self.incident = incident
+        self.new_frequency = new_frequency
 
 class PollingInterface(ABC):
 

@@ -4,6 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+import IncidentReportDto
 from PollingInterface import *
 from Logger import logger
 
@@ -48,8 +49,13 @@ class DummyServicePoller(PollingInterface):
                 self._last_seen_incident = latest
                 self._handle_incident_active()
                 return PollResult(
-                    incident=latest,
-                    new_frequency=self.incident_frequency  # Poll faster during incident
+                    incident=IncidentReportDto(
+                        status=latest.status,
+                        message=latest.message,
+                        source="DummyService",
+                        createdAt=latest.createdAt
+                    ),
+                    new_frequency=self.incident_frequency
                 )
 
             # Incident exists but nothing changed
