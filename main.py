@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from typing import Deque
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, StreamingResponse
-import uvicorn
+# import uvicorn
 from DummyServicePoller import *
 from CustomHttpClientPool import CustomHttpClientPool
 from PollingQueue import *
@@ -18,7 +18,7 @@ incidentArr: deque = deque(maxlen=10)
 # ---- Setup ----
 
 publisher = IncidentEventPublisher()
-publisher.subscribe(LoggerSubscriber())
+# publisher.subscribe(LoggerSubscriber())
 ui_publisher = UIPublisherSubscriber()
 publisher.subscribe(ui_publisher)
 
