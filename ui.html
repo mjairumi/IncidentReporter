@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Incident Reporter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Bebas+Neue&display=swap');
+
+  :root {
+    --bg:       #080a0e;
+    --surface:  #0f1218;
+    --border:   #1e2330;
+    --green:    #00ff88;
+    --red:      #ff3355;
+    --yellow:   #ffcc00;
+    --blue:     #4488ff;
+    --muted:    #4a5568;
+    --text:     #c8d0e0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.15em;
+    color: var(--green);
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    transition: all 0.3s;
+  }
+  .status-pill.connected { color: var(--green); border-color: rgba(0,255,136,0.3); }
+  .status-pill.error { color: var(--red); border-color: rgba(255,51,85,0.3); }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+  .connected .dot { background: var(--green); animation: pulse 2s infinite; }
+  .error .dot { background: var(--red); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat {
+    flex: 1;
+    background: var(--surface);
+    padding: 14px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    transition: color 0.3s;
+  }
+  .stat-value.flash { animation: flash 0.5s ease; }
+
+  @keyframes flash {
+    0%   { color: var(--green); transform: scale(1.1); }
+    100% { color: var(--text);  transform: scale(1); }
+  }
+
+  /* ── MAIN ── */
+  main {
+    padding: 24px 32px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--muted);
+    padding: 80px 0;
+  }
+  .empty-icon { font-size: 2.5rem; opacity: 0.3; }
+  .empty-text { font-size: 0.75rem; letter-spacing: 0.08em; }
+
+  /* ── INCIDENT CARD ── */
+  .incident {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 6px;
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px 20px;
+    align-items: start;
+    animation: slideIn 0.3s ease;
+    transition: border-color 0.3s;
+  }
+  .incident:hover { border-color: rgba(255,255,255,0.1); }
+
+  .incident.source-openaipoller { border-left-color: var(--green); }
+  .incident.source-dummyservicepoller { border-left-color: var(--blue); }
+  .incident.source-manual { border-left-color: var(--yellow); }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .incident-source {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.05);
+    white-space: nowrap;
+    align-self: center;
+  }
+  .source-openaipoller .incident-source { color: var(--green); }
+  .source-dummyservicepoller .incident-source { color: var(--blue); }
+  .source-manual .incident-source { color: var(--yellow); }
+
+  .incident-body { min-width: 0; }
+  .incident-status {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    color: var(--red);
+  }
+  .incident-message {
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .incident-time {
+    font-size: 0.62rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 12px 32px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-text { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.06em; }
+
+  .clear-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .clear-btn:hover { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">Incident Reporter</span>
+  <div class="status-pill" id="statusPill">
+    <div class="dot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat">
+    <span class="stat-label">Total Incidents</span>
+    <span class="stat-value" id="statTotal">0</span>
+  </div>
+  <div class="stat">
+    <span class="stat-label">OpenAI</span>
+    <span class="stat-value" id="statOpenAI">0</span>
+  </div>
+  <div class="stat">
+    <span class="stat-label">Dummy Service</span>
+    <span class="stat-value" id="statDummy">0</span>
+  </div>
+  <div class="stat">
+    <span class="stat-label">Last Received</span>
+    <span class="stat-value" id="statLast" style="font-size:1rem; padding-top:8px;">—</span>
+  </div>
+</div>
+
+<main id="feed">
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">◎</div>
+    <div class="empty-text">Monitoring active — no incidents detected</div>
+  </div>
+</main>
+
+<footer>
+  <span class="footer-text" id="footerText">Waiting for events...</span>
+  <button class="clear-btn" onclick="clearFeed()">Clear Feed</button>
+</footer>
+
+<script>
+  const feed = document.getElementById('feed');
+  const emptyState = document.getElementById('emptyState');
+  const statusPill = document.getElementById('statusPill');
+  const statusText = document.getElementById('statusText');
+  const footerText = document.getElementById('footerText');
+
+  const counts = { total: 0, openai: 0, dummy: 0 };
+
+  function setStatus(state, text) {
+    statusPill.className = 'status-pill ' + state;
+    statusText.textContent = text;
+  }
+
+  function flashStat(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('flash');
+    void el.offsetWidth;  // reflow to restart animation
+    el.classList.add('flash');
+  }
+
+  function updateStats(source) {
+    counts.total++;
+    document.getElementById('statTotal').textContent = counts.total;
+    flashStat('statTotal');
+
+    const src = source.toLowerCase();
+    if (src.includes('openai')) {
+      counts.openai++;
+      document.getElementById('statOpenAI').textContent = counts.openai;
+      flashStat('statOpenAI');
+    } else if (src.includes('dummy')) {
+      counts.dummy++;
+      document.getElementById('statDummy').textContent = counts.dummy;
+      flashStat('statDummy');
+    }
+
+    const now = new Date().toLocaleTimeString();
+    document.getElementById('statLast').textContent = now;
+    footerText.textContent = `Last event received at ${now}`;
+  }
+
+  function addIncident(data) {
+    emptyState.style.display = 'none';
+
+    const sourceClass = 'source-' + data.source.toLowerCase().replace(/\s/g, '');
+    const time = new Date(data.detectedAt).toLocaleTimeString();
+
+    const card = document.createElement('div');
+    card.className = `incident ${sourceClass}`;
+    card.innerHTML = `
+      <span class="incident-source">${data.source}</span>
+      <div class="incident-body">
+        <div class="incident-status">${data.status}</div>
+        <div class="incident-message">${data.message}</div>
+      </div>
+      <span class="incident-time">${time}</span>
+    `;
+
+    // Prepend so newest is at top
+    feed.insertBefore(card, feed.firstChild);
+
+    // Keep max 50 cards in the DOM
+    const cards = feed.querySelectorAll('.incident');
+    if (cards.length > 50) cards[cards.length - 1].remove();
+
+    updateStats(data.source);
+  }
+
+  function clearFeed() {
+    feed.querySelectorAll('.incident').forEach(c => c.remove());
+    emptyState.style.display = '';
+    counts.total = counts.openai = counts.dummy = 0;
+    ['statTotal', 'statOpenAI', 'statDummy'].forEach(id => {
+      document.getElementById(id).textContent = '0';
+    });
+    document.getElementById('statLast').textContent = '—';
+    footerText.textContent = 'Feed cleared.';
+  }
+
+  // ── SSE Connection ──
+  function connect() {
+    const sse = new EventSource('/stream/incidents');
+
+    sse.addEventListener('connected', () => {
+      setStatus('connected', 'Live');
+    });
+
+    sse.addEventListener('incident', (e) => {
+      const data = JSON.parse(e.data);
+      addIncident(data);
+    });
+
+    sse.addEventListener('heartbeat', () => {
+      // Connection is alive — nothing to do
+    });
+
+    sse.onerror = () => {
+      setStatus('error', 'Reconnecting...');
+      sse.close();
+      setTimeout(connect, 3000);  // Auto-reconnect after 3s
+    };
+  }
+
+  connect();
+</script>
+</body>
+</html>

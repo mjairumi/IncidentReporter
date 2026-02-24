@@ -4,6 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from CustomHttpClientPool import CustomHttpClientPool
 import IncidentReportDto
 from PollingInterface import *
 from Logger import logger
@@ -30,11 +31,10 @@ class DummyServicePoller(PollingInterface):
 
     async def poll(self) -> PollResult:
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(self.DUMMY_SERVICE_URL)
-                response.raise_for_status()
-
-                data = response.json()
+            client = CustomHttpClientPool.get_client()          # No 'async with' — client is shared
+            response = await client.get(self.DUMMY_SERVICE_URL)
+            response.raise_for_status()
+            data = response.json()
 
             # No incidents at all
             if not data:

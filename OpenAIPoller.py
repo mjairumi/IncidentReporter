@@ -5,6 +5,7 @@ from email.utils import parsedate_to_datetime
 from typing import Optional
 from bs4 import BeautifulSoup
 
+from CustomHttpClientPool import CustomHttpClientPool
 from PollingInterface import PollingInterface, PollResult
 from IncidentReportDto import IncidentReportDto
 from Logger import logger
@@ -27,9 +28,9 @@ class OpenAIPoller(PollingInterface):
 
     async def poll(self) -> PollResult:
         try:
-            async with httpx.AsyncClient(timeout=10) as client:
-                response = await client.get(self.RSS_URL)
-                response.raise_for_status()
+            client = CustomHttpClientPool.get_client()
+            response = await client.get(self.RSS_URL)
+            response.raise_for_status()
 
             root = ET.fromstring(response.text)
             channel = root.find("channel")
