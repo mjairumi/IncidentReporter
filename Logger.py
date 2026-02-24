@@ -19,6 +19,6 @@ logger = logging.getLogger(__name__)
 incident_logger = logging.getLogger("incident")
 incident_logger.propagate = False  # Don't bubble up to root logger / terminal
 incident_logger.setLevel(logging.WARNING)
-incident_logger.addHandler(
-    logging.FileHandler("incidents.log")
-)
+# incident_logger.addHandler(
+#     logging.FileHandler("incidents.log")
+# )
